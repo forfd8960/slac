@@ -5,7 +5,7 @@ use sqlx::FromRow;
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct Channel {
     pub id: i64,
-    pub owner_id: i64,
+    pub creator_id: i64,
     pub name: String,
     pub description: String,
     pub is_public: bool, // public or private channel

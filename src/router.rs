@@ -9,11 +9,16 @@ use crate::{errors::AppError, state::AppState};
 pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     let api_router = Router::new()
         .route("/index", get(index))
-        .route("/chats/v1/users/register", get(register))
+        .route("/chats/v1/users/register", post(register))
         .route("/chats/v1/users/login", post(login))
-        .route("/chats/v1/convertions/join", post(join_convs))
-        .route("/chats/v1/convertions/leave", post(leave_convs))
-        .route("/chats/v1/convertions", post(create_convs))
+        .route("/chats/v1/channels/join", post(join_channel))
+        .route("/chats/v1/channels/leave", post(leave_channel))
+        .route("/chats/v1/channels/{channel_id}", get(get_channel))
+        .route(
+            "/chats/v1/channels",
+            post(create_channel).get(list_channels),
+        )
+        .route("/chats/v1/threads", post(create_thread))
         .route("/chats/v1/messages", post(send_message))
         .with_state(state);
 
@@ -32,15 +37,27 @@ async fn login() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World!")
 }
 
-async fn join_convs() -> Result<impl IntoResponse, AppError> {
+async fn list_channels() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World!")
 }
 
-async fn leave_convs() -> Result<impl IntoResponse, AppError> {
+async fn get_channel() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World!")
 }
 
-async fn create_convs() -> Result<impl IntoResponse, AppError> {
+async fn join_channel() -> Result<impl IntoResponse, AppError> {
+    Ok("Hello, World!")
+}
+
+async fn leave_channel() -> Result<impl IntoResponse, AppError> {
+    Ok("Hello, World!")
+}
+
+async fn create_channel() -> Result<impl IntoResponse, AppError> {
+    Ok("Hello, World!")
+}
+
+async fn create_thread() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World!")
 }
 
