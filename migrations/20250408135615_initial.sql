@@ -1,6 +1,6 @@
 -- Add migration script here
 CREATE TABLE IF NOT EXISTS users (
-    id bigserial PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     username VARCHAR(128) NOT NULL UNIQUE,
     password VARCHAR(64) NOT NULL,
     created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS channels (
     description VARCHAR(256) NOT NULL,
     is_public BOOLEAN NOT NULL,
     user_list BIGINT[] NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('ACTIVE', 'ARCHIVED')),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('ACTIVE', 'ARCHIVED')),
     created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
 );
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS messages (
     msg_type SMALLINT NOT NULL CHECK (msg_type IN (0, 1)),
     from_user BIGINT NOT NULL,
     to_user BIGINT NOT NULL,
-    content TEXT NOT NULL,
+    content JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
