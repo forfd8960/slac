@@ -2,54 +2,61 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(128) NOT NULL UNIQUE,
-    password VARCHAR(64) NOT NULL,
-    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
+    password_hash VARCHAR(255) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS channels (
     id BIGSERIAL PRIMARY KEY,
+    ch_name VARCHAR(128) NOT NULL UNIQUE,
+    ch_description TEXT NOT NULL DEFAULT '',
     creator_id BIGINT NOT NULL,
-    name VARCHAR(128) NOT NULL UNIQUE,
-    description VARCHAR(256) NOT NULL,
-    is_public BOOLEAN NOT NULL,
-    user_list BIGINT[] NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('ACTIVE', 'ARCHIVED')),
-    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
+    is_private BOOLEAN NOT NULL DEFAULT FALSE,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_channels_creator_id ON channels(creator_id);
 
-CREATE TABLE IF NOT EXISTS threads(
+CREATE TABLE IF NOT EXISTS channel_members (
     id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
-    from_user BIGINT NOT NULL,
-    msg_list BIGINT[] NOT NULL,
-    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
+    -- 'member','admin',
+    member_role VARCHAR(20) NOT NULL DEFAULT 'member',
+    joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT unique_user_channel UNIQUE (user_id, channel_id)
 );
 
-CREATE INDEX idx_threads_channel_id ON threads(channel_id);
+-- Find channels a user is in
+CREATE INDEX idx_channel_members_user_id ON channel_members(user_id);
+-- Find members of a channel
+CREATE INDEX idx_channel_members_channel_id ON channel_members(channel_id);
 
-CREATE INDEX idx_threads_from_user ON threads(from_user);
+CREATE TYPE message_content_type AS ENUM ('text', 'image', 'video', 'file', 'system');
 
 CREATE TABLE IF NOT EXISTS messages (
     id BIGSERIAL PRIMARY KEY,
     channel_id BIGINT NOT NULL,
-    thread_id BIGINT NOT NULL,
-    msg_type SMALLINT NOT NULL CHECK (msg_type IN (0, 1)),
-    from_user BIGINT NOT NULL,
-    to_user BIGINT NOT NULL,
-    content JSONB NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+    sender_id BIGINT, -- Can be NULL if sender user is deleted or for system messages
+    parent_msg_id BIGINT, -- For threading: references the 'id' of the message this is replying to
+    content_type message_content_type NOT NULL DEFAULT 'text',
+    text_content TEXT, -- Content for 'text' type messages
+    media_url VARCHAR(2048), -- URL for 'image', 'video', 'file' types (points to Object Storage)
+    media_metadata JSONB, -- Optional: Store metadata like filename, size, dimensions, duration
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_messages_channel_id ON messages(channel_id);
+-- Fetch messages for a channel, ordered by time (most common query)
+CREATE INDEX idx_messages_channel_created ON messages(channel_id, created_at DESC);
 
-CREATE INDEX idx_messages_thread_id ON messages(thread_id);
+CREATE INDEX idx_messages_sender_id ON messages(sender_id, created_at DESC);
 
-CREATE INDEX idx_messages_from_user ON messages(from_user);
-
-CREATE INDEX idx_messages_to_user ON messages(to_user);
+-- Fetch replies to a specific message (thread view), ordered by time
+CREATE INDEX idx_messages_parent_created ON messages(parent_msg_id, created_at ASC);
