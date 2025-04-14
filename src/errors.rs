@@ -8,6 +8,8 @@ pub enum AppError {
     SqlxError(#[from] sqlx::Error),
     #[error("{0} not found")]
     NotFound(String),
+    #[error("{0}")]
+    InvalidArgument(String),
 }
 
 impl IntoResponse for AppError {
@@ -15,6 +17,7 @@ impl IntoResponse for AppError {
         let status_code = match self {
             AppError::NotFound(_) => StatusCode::NOT_FOUND,
             AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::InvalidArgument(_) => StatusCode::BAD_REQUEST,
         };
 
         (status_code, format!("{:?}", self)).into_response()
