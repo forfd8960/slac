@@ -34,6 +34,7 @@ pub struct UpdateUser {
     pub is_active: bool,
 }
 
+#[derive(Debug)]
 pub struct UserRepository<'a> {
     pool: &'a PgPool,
 }

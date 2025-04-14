@@ -10,6 +10,9 @@ pub enum AppError {
     NotFound(String),
     #[error("{0}")]
     InvalidArgument(String),
+
+    #[error("failed to generate hash: {0}")]
+    PasswordHashError(#[from] argon2::password_hash::Error),
 }
 
 impl IntoResponse for AppError {
@@ -17,6 +20,7 @@ impl IntoResponse for AppError {
         let status_code = match self {
             AppError::NotFound(_) => StatusCode::NOT_FOUND,
             AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::PasswordHashError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::InvalidArgument(_) => StatusCode::BAD_REQUEST,
         };
 
