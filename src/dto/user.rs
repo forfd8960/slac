@@ -32,3 +32,15 @@ pub struct RegisterRequest {
 pub struct RegisterResponse {
     pub user: User,
 }
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct LoginReq {
+    #[validate(length(min = 1))]
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginResp {
+    pub token: String,
+}

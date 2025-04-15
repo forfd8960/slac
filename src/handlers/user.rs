@@ -7,7 +7,8 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    dto::user::{RegisterRequest, RegisterResponse, User as UserDto},
+    auth::{DecodingKey, EncodingKey},
+    dto::user::{LoginReq, LoginResp, RegisterRequest, RegisterResponse, User as UserDto},
     errors::AppError,
     models::user::{CreateUser, User, UserRepository},
 };
@@ -37,11 +38,13 @@ pub struct CreateUserResp {
 #[derive(Debug)]
 pub struct UserService<'a> {
     user_store: &'a UserRepository<'a>,
+    ek: &'a EncodingKey,
+    dk: &'a DecodingKey,
 }
 
 impl<'a> UserService<'a> {
-    pub fn new(user_store: &'a UserRepository) -> Self {
-        Self { user_store }
+    pub fn new(user_store: &'a UserRepository, ek: &'a EncodingKey, dk: &'a DecodingKey) -> Self {
+        Self { user_store, ek, dk }
     }
 
     pub async fn create_user(&self, req: &RegisterRequest) -> Result<RegisterResponse, AppError> {
@@ -86,6 +89,22 @@ impl<'a> UserService<'a> {
                 updated_at: user.updated_at,
             },
         })
+    }
+
+    pub async fn login(&self, req: &LoginReq) -> Result<LoginResp, AppError> {
+        let user_res = self.user_store.get_by_username(req.username).await?;
+        match user_res {
+            Some(user) => {
+                let verified = verify_password(&req.password, &user.password_hash)?;
+                if !verified {
+                    return Err(AppError::Unauthorized("password is correct".to_string()));
+                }
+
+                let tk = self.ek.sign(user)?;
+                Ok(LoginResp { token: tk })
+            }
+            None => Err(AppError::NotFound("user not found".to_string())),
+        }
     }
 }
 

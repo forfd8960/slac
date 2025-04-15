@@ -6,8 +6,11 @@ use axum::{
 };
 
 use crate::{
-    dto::user::RegisterRequest, errors::AppError, handlers::user::UserService,
-    models::user::UserRepository, state::AppState,
+    dto::user::{LoginReq, RegisterRequest},
+    errors::AppError,
+    handlers::user::UserService,
+    models::user::UserRepository,
+    state::AppState,
 };
 
 pub async fn get_router(state: AppState) -> Result<Router, AppError> {
@@ -40,15 +43,24 @@ async fn register(
     println!("register user: {:?}", payload);
 
     let user_repo = UserRepository::new(&state.pool);
-    let user_service = UserService::new(&user_repo);
+    let user_service = UserService::new(&user_repo, &state.ek, &state.dk);
 
     let resp = user_service.create_user(&payload).await?;
     println!("created user: {:?}", resp.user);
     Ok(Json(resp))
 }
 
-async fn login() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
+async fn login(
+    State(state): State<AppState>,
+    Json(req): Json<LoginReq>,
+) -> Result<impl IntoResponse, AppError> {
+    println!("login user: {:?}", req);
+
+    let user_repo = UserRepository::new(&state.pool);
+    let user_service = UserService::new(&user_repo, &state.ek, &state.dk);
+
+    let resp = user_service.login(&req).await?;
+    Ok(Json(resp))
 }
 
 async fn list_channels() -> Result<impl IntoResponse, AppError> {
