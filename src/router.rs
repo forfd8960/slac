@@ -1,10 +1,14 @@
 use axum::{
-    Router,
+    Json, Router,
+    extract::State,
     response::IntoResponse,
     routing::{get, post},
 };
 
-use crate::{errors::AppError, state::AppState};
+use crate::{
+    dto::user::RegisterRequest, errors::AppError, handlers::user::UserService,
+    models::user::UserRepository, state::AppState,
+};
 
 pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     let api_router = Router::new()
@@ -29,8 +33,18 @@ async fn index() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World!")
 }
 
-async fn register() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
+async fn register(
+    State(state): State<AppState>,
+    Json(payload): Json<RegisterRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    println!("register user: {:?}", payload);
+
+    let user_repo = UserRepository::new(&state.pool);
+    let user_service = UserService::new(&user_repo);
+
+    let resp = user_service.create_user(&payload).await?;
+    println!("created user: {:?}", resp.user);
+    Ok(Json(resp))
 }
 
 async fn login() -> Result<impl IntoResponse, AppError> {

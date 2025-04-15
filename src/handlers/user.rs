@@ -7,6 +7,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    dto::user::{RegisterRequest, RegisterResponse, User as UserDto},
     errors::AppError,
     models::user::{CreateUser, User, UserRepository},
 };
@@ -43,11 +44,18 @@ impl<'a> UserService<'a> {
         Self { user_store }
     }
 
-    pub async fn create_user(&self, req: &CreateUserReq) -> Result<CreateUserResp, AppError> {
+    pub async fn create_user(&self, req: &RegisterRequest) -> Result<RegisterResponse, AppError> {
         let name_len = req.username.len();
         if name_len == 0 || name_len < MIN_NAME_LEN || name_len > MAX_NAME_LEN {
             return Err(AppError::InvalidArgument(
                 "user name is invalid".to_string(),
+            ));
+        }
+
+        let display_name_len = req.display_name.len();
+        if display_name_len == 0 || display_name_len > MAX_NAME_LEN {
+            return Err(AppError::InvalidArgument(
+                "display name is invalid".to_string(),
             ));
         }
 
@@ -60,18 +68,28 @@ impl<'a> UserService<'a> {
             .user_store
             .create(&CreateUser {
                 username: req.username.clone(),
-                avatar_url: req.avatar_url.clone(),
+                avatar_url: req.avatar.clone(),
                 password_hash: pwd_hash,
                 display_name: req.display_name.clone(),
                 is_active: true,
             })
             .await?;
 
-        Ok(CreateUserResp { user })
+        Ok(RegisterResponse {
+            user: UserDto {
+                id: user.id,
+                username: user.username,
+                avatar_url: user.avatar_url,
+                display_name: user.display_name,
+                is_active: user.is_active,
+                created_at: user.created_at,
+                updated_at: user.updated_at,
+            },
+        })
     }
 }
 
-pub fn validate_password(pwd: &str) -> bool {
+fn validate_password(pwd: &str) -> bool {
     PASSWORD_REGEX.is_match(pwd)
 }
 
