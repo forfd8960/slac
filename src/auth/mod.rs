@@ -46,17 +46,24 @@ impl DecodingKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::user::User;
     use anyhow::Result;
 
     #[test]
     fn test_generate_keys() -> Result<()> {
-        let encoding_pem = include_str!("../private.pem");
-        let decoding_pem = include_str!("../public.pem");
+        let encoding_pem = include_str!("private_key.pem");
+        let decoding_pem = include_str!("public_key.pem");
         let ek = EncodingKey::load(encoding_pem)?;
         let dk = DecodingKey::load(decoding_pem)?;
 
-        let user = User::new("AlexZ".to_string(), "alex@example.com".to_string());
+        let user = User {
+            id: 1,
+            username: "john".to_string(),
+            display_name: "John".to_string(),
+            avatar_url: "".to_string(),
+            is_active: true,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+        };
 
         let token = ek.sign(user.clone())?;
         println!("sign token: {:?}", token);

@@ -35,7 +35,6 @@ pub struct CreateUserResp {
     pub user: User,
 }
 
-#[derive(Debug)]
 pub struct UserService<'a> {
     user_store: &'a UserRepository<'a>,
     ek: &'a EncodingKey,
@@ -92,7 +91,7 @@ impl<'a> UserService<'a> {
     }
 
     pub async fn login(&self, req: &LoginReq) -> Result<LoginResp, AppError> {
-        let user_res = self.user_store.get_by_username(req.username).await?;
+        let user_res = self.user_store.get_by_username(&req.username).await?;
         match user_res {
             Some(user) => {
                 let verified = verify_password(&req.password, &user.password_hash)?;
@@ -100,7 +99,7 @@ impl<'a> UserService<'a> {
                     return Err(AppError::Unauthorized("password is correct".to_string()));
                 }
 
-                let tk = self.ek.sign(user)?;
+                let tk = self.ek.sign(UserDto::from(user))?;
                 Ok(LoginResp { token: tk })
             }
             None => Err(AppError::NotFound("user not found".to_string())),

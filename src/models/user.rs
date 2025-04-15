@@ -106,7 +106,7 @@ impl<'a> UserRepository<'a> {
         Ok(user)
     }
 
-    pub async fn get_by_username(&self, user_name: String) -> Result<Option<User>, AppError> {
+    pub async fn get_by_username(&self, user_name: &String) -> Result<Option<User>, AppError> {
         let user = sqlx::query_as(
             r#"
             SELECT id, username, display_name, is_active, avatar_url, created_at, updated_at
@@ -114,7 +114,7 @@ impl<'a> UserRepository<'a> {
             WHERE username = $1
             "#,
         )
-        .bind(&user_name)
+        .bind(user_name)
         .fetch_optional(self.pool)
         .await?;
 

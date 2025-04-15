@@ -1,12 +1,12 @@
 use sqlx::PgPool;
-use std::{collections::HashMap, ops::Deref, sync::Arc};
+use std::{ops::Deref, sync::Arc};
 
 use crate::{
     auth::{DecodingKey, EncodingKey},
     errors::AppError,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AppState {
     pub inner: Arc<AppStateInner>,
 }
@@ -28,7 +28,7 @@ impl Deref for AppState {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AppStateInner {
     pub pool: PgPool,
     pub ek: EncodingKey,
