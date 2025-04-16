@@ -47,16 +47,16 @@ impl<'a> UserRepository<'a> {
     pub async fn create(&self, user: &CreateUser) -> Result<User, AppError> {
         let user = sqlx::query_as(
             r#"
-            INSERT INTO users (username, avatar_url, password_hash, display_name, is_active)
+            INSERT INTO users (username, password_hash, display_name, is_active, avatar_url)
             VALUES ($1, $2, $3, $4, $5)
-            RETURNING id, username, display_name, is_active, avatar_url
+            RETURNING id, username, password_hash, display_name, is_active, avatar_url, created_at, updated_at
             "#,
         )
         .bind(&user.username)
-        .bind(&user.avatar_url)
         .bind(&user.password_hash)
         .bind(&user.display_name)
         .bind(&user.is_active)
+        .bind(&user.avatar_url)
         .fetch_one(self.pool)
         .await?;
 
@@ -94,7 +94,7 @@ impl<'a> UserRepository<'a> {
     pub async fn get_by_id(&self, id: i32) -> Result<Option<User>, AppError> {
         let user = sqlx::query_as(
             r#"
-            SELECT id, username, display_name, is_active, avatar_url, created_at, updated_at
+            SELECT id, username, password_hash,display_name, is_active, avatar_url, created_at, updated_at
             FROM users
             WHERE id = $1
             "#,
@@ -109,7 +109,7 @@ impl<'a> UserRepository<'a> {
     pub async fn get_by_username(&self, user_name: &String) -> Result<Option<User>, AppError> {
         let user = sqlx::query_as(
             r#"
-            SELECT id, username, display_name, is_active, avatar_url, created_at, updated_at
+            SELECT id, username, password_hash,display_name, is_active, avatar_url, created_at, updated_at
             FROM users
             WHERE username = $1
             "#,

@@ -2,8 +2,6 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
-use lazy_static::lazy_static;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -16,11 +14,8 @@ use crate::{
 const MIN_NAME_LEN: usize = 6;
 const MAX_NAME_LEN: usize = 200;
 
-lazy_static! {
-    static ref PASSWORD_REGEX: Regex =
-        Regex::new(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$")
-            .unwrap();
-}
+const MIN_PWD_LEN: usize = 8;
+const MAX_PWD_LEN: usize = 20;
 
 #[derive(Debug, Deserialize)]
 pub struct CreateUserReq {
@@ -54,6 +49,13 @@ impl<'a> UserService<'a> {
             ));
         }
 
+        let exist_user = self.user_store.get_by_username(&req.username).await?;
+        if exist_user.is_some() {
+            return Err(AppError::AlreadyExists(
+                "username has registered".to_string(),
+            ));
+        }
+
         let display_name_len = req.display_name.len();
         if display_name_len == 0 || display_name_len > MAX_NAME_LEN {
             return Err(AppError::InvalidArgument(
@@ -61,9 +63,7 @@ impl<'a> UserService<'a> {
             ));
         }
 
-        if !validate_password(&req.password) {
-            return Err(AppError::InvalidArgument("password is invalid".to_string()));
-        }
+        let _ = validate_password(&req.password, MIN_PWD_LEN, MAX_PWD_LEN)?;
 
         let pwd_hash = hash_password(&req.password)?;
         let user = self
@@ -107,8 +107,56 @@ impl<'a> UserService<'a> {
     }
 }
 
-fn validate_password(pwd: &str) -> bool {
-    PASSWORD_REGEX.is_match(pwd)
+fn validate_password(password: &str, min_len: usize, max_len: usize) -> Result<(), AppError> {
+    if password.len() < min_len || password.len() > max_len {
+        return Err(AppError::InvalidArgument(
+            "password too short/long".to_string(),
+        ));
+    }
+
+    let mut has_lower = false;
+    let mut has_upper = false;
+    let mut has_digit = false;
+    let mut has_special = false;
+
+    for ch in password.chars() {
+        if ch.is_ascii_lowercase() {
+            has_lower = true;
+        } else if ch.is_ascii_uppercase() {
+            has_upper = true;
+        } else if ch.is_ascii_digit() {
+            has_digit = true;
+        } else if ch.is_ascii_punctuation() {
+            has_special = true;
+        } else if !ch.is_ascii() {
+            return Err(AppError::InvalidArgument(
+                "password invalid(not char)".to_string(),
+            ));
+        }
+    }
+
+    if !has_lower {
+        return Err(AppError::InvalidArgument(
+            "password invalid(no lower char)".to_string(),
+        ));
+    }
+    if !has_upper {
+        return Err(AppError::InvalidArgument(
+            "password invalid(no upper char)".to_string(),
+        ));
+    }
+    if !has_digit {
+        return Err(AppError::InvalidArgument(
+            "password invalid(no number)".to_string(),
+        ));
+    }
+    if !has_special {
+        return Err(AppError::InvalidArgument(
+            "password invalid(no special char)".to_string(),
+        ));
+    }
+
+    Ok(())
 }
 
 fn hash_password(password: &str) -> Result<String, AppError> {

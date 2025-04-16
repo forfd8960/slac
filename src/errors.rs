@@ -12,6 +12,9 @@ pub enum AppError {
     InvalidArgument(String),
 
     #[error("{0}")]
+    AlreadyExists(String),
+
+    #[error("{0}")]
     Unauthorized(String),
 
     #[error("generate token failed: {0}")]
@@ -30,6 +33,7 @@ impl IntoResponse for AppError {
             AppError::InvalidArgument(_) => StatusCode::BAD_REQUEST,
             AppError::Unauthorized(_) => StatusCode::UNAUTHORIZED,
             AppError::GenerateTokenError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::AlreadyExists(_) => StatusCode::CONFLICT,
         };
 
         (status_code, format!("{:?}", self)).into_response()

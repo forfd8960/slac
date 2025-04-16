@@ -1,1 +1,15 @@
 GET http://localhost:6869/index
+
+
+### login user
+POST http://localhost:6869/api/v1/users/login
+Content-Type: application/json
+
+{"username": "alex", "password": "test-pwd123@#"}
+
+
+### regiser user
+POST http://localhost:6869/api/v1/users/register
+Content-Type: application/json
+
+{"username": "xiaoming_123", "password": "test-Pwd123@#", "avatar": "http://localhost:6869/imgs/alex_avatar.png", "display_name": "Xiao Ming"}

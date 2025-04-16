@@ -50,8 +50,8 @@ mod tests {
 
     #[test]
     fn test_generate_keys() -> Result<()> {
-        let encoding_pem = include_str!("private_key.pem");
-        let decoding_pem = include_str!("public_key.pem");
+        let encoding_pem = include_str!("../../private_key.pem");
+        let decoding_pem = include_str!("../../public_key.pem");
         let ek = EncodingKey::load(encoding_pem)?;
         let dk = DecodingKey::load(decoding_pem)?;
 
