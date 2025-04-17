@@ -6,7 +6,12 @@ use axum::{
 
 use crate::{
     errors::AppError,
-    handlers::user_handler::{login, register},
+    handlers::{
+        channel_handler::{
+            create_channel, get_channel, join_channel, leave_channel, list_channels,
+        },
+        user_handler::{login, register},
+    },
     state::AppState,
 };
 
@@ -27,26 +32,6 @@ pub async fn get_router(state: AppState) -> Result<Router, AppError> {
 }
 
 async fn index() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
-}
-
-async fn list_channels() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
-}
-
-async fn get_channel() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
-}
-
-async fn join_channel() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
-}
-
-async fn leave_channel() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
-}
-
-async fn create_channel() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World!")
 }
 

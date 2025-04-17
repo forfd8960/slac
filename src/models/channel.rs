@@ -16,6 +16,14 @@ pub struct Channel {
     pub updated_at: chrono::DateTime<Utc>,
 }
 
+pub struct CreateChannel {
+    pub ch_name: String,
+    pub ch_description: String,
+    pub creator_id: i64,
+    pub is_private: bool,
+    pub is_archived: bool,
+}
+
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct ChannelMembers {
     pub id: i64,
@@ -31,7 +39,11 @@ pub struct ChanRepository<'a> {
 }
 
 impl<'a> ChanRepository<'a> {
-    pub async fn create(&self, channel: &Channel) -> Result<Channel, AppError> {
+    pub fn new(pool: &'a PgPool) -> Self {
+        Self { pool }
+    }
+
+    pub async fn create(&self, channel: &CreateChannel) -> Result<Channel, AppError> {
         let created_channel = sqlx::query_as(
             r#"
             INSERT INTO channels 

@@ -13,3 +13,10 @@ POST http://localhost:6869/api/v1/users/register
 Content-Type: application/json
 
 {"username": "xiaoming_123", "password": "test-Pwd123@#", "avatar": "http://localhost:6869/imgs/alex_avatar.png", "display_name": "Xiao Ming"}
+
+
+### create channel
+POST http://localhost:6869/api/v1/channels
+Content-Type: application/json
+
+{"ch_name": "learn-rust-chan1", "ch_desc": "Let's learn rust", "is_private": false, "creator_id": 3}
