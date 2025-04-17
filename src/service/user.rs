@@ -2,13 +2,12 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
-use serde::{Deserialize, Serialize};
 
 use crate::{
     auth::{DecodingKey, EncodingKey},
     dto::user::{LoginReq, LoginResp, RegisterRequest, RegisterResponse, User as UserDto},
     errors::AppError,
-    models::user::{CreateUser, User, UserRepository},
+    models::user::{CreateUser, UserRepository},
 };
 
 const MIN_NAME_LEN: usize = 6;
@@ -16,19 +15,6 @@ const MAX_NAME_LEN: usize = 200;
 
 const MIN_PWD_LEN: usize = 8;
 const MAX_PWD_LEN: usize = 20;
-
-#[derive(Debug, Deserialize)]
-pub struct CreateUserReq {
-    pub username: String,
-    pub avatar_url: String,
-    pub password: String,
-    pub display_name: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct CreateUserResp {
-    pub user: User,
-}
 
 pub struct UserService<'a> {
     user_store: &'a UserRepository<'a>,
@@ -78,15 +64,7 @@ impl<'a> UserService<'a> {
             .await?;
 
         Ok(RegisterResponse {
-            user: UserDto {
-                id: user.id,
-                username: user.username,
-                avatar_url: user.avatar_url,
-                display_name: user.display_name,
-                is_active: user.is_active,
-                created_at: user.created_at,
-                updated_at: user.updated_at,
-            },
+            user: UserDto::from(user),
         })
     }
 

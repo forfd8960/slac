@@ -4,6 +4,7 @@ use std::{ops::Deref, sync::Arc};
 use crate::{
     auth::{DecodingKey, EncodingKey},
     errors::AppError,
+    service::user::UserService,
 };
 
 #[derive(Clone)]
