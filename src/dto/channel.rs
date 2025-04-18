@@ -1,4 +1,4 @@
-use crate::models::channel::Channel as ChanDao;
+use crate::models::channel::{Channel as ChanDao, ChannelMembers};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -28,6 +28,32 @@ pub struct CreateChannelRequest {
 #[derive(Debug, Serialize)]
 pub struct CreateChannelResp {
     pub channel: Channel,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ListChanReq {
+    pub creator_id: i64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ListChanResp {
+    pub channels: Vec<Channel>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct GetChanResp {
+    pub channel: Option<Channel>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct JoinChanReq {
+    pub user_id: i64,
+    pub chan_id: i64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct JoinChanResp {
+    pub chan_member: ChannelMembers,
 }
 
 impl From<ChanDao> for Channel {

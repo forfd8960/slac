@@ -4,6 +4,9 @@ use sqlx::{FromRow, PgPool};
 
 use crate::errors::AppError;
 
+const ROLE_MEMBER: &'static str = "member";
+const ROLE_ADMIN: &'static str = "admin";
+
 #[derive(Debug, FromRow, Serialize, Deserialize)]
 pub struct Channel {
     pub id: i64,
@@ -128,5 +131,27 @@ impl<'a> ChanRepository<'a> {
         .await?;
 
         Ok(ch_members)
+    }
+
+    pub async fn add_channel_member(
+        &self,
+        channel_id: i64,
+        user_id: i64,
+    ) -> Result<ChannelMembers, AppError> {
+        let chan_member: ChannelMembers = sqlx::query_as(
+            r#"
+            INSERT INTO channel_members 
+            (user_id, channel_id, member_role)
+            VALUES ($1, $2, $3)
+            RETURNING *
+            "#,
+        )
+        .bind(user_id)
+        .bind(channel_id)
+        .bind(ROLE_MEMBER)
+        .fetch_one(self.pool)
+        .await?;
+
+        Ok(chan_member)
     }
 }

@@ -91,7 +91,7 @@ impl<'a> UserRepository<'a> {
         Ok(user)
     }
 
-    pub async fn get_by_id(&self, id: i32) -> Result<Option<User>, AppError> {
+    pub async fn get_by_id(&self, id: i64) -> Result<Option<User>, AppError> {
         let user = sqlx::query_as(
             r#"
             SELECT id, username, password_hash,display_name, is_active, avatar_url, created_at, updated_at

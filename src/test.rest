@@ -19,4 +19,21 @@ Content-Type: application/json
 POST http://localhost:6869/api/v1/channels
 Content-Type: application/json
 
-{"ch_name": "learn-rust-chan1", "ch_desc": "Let's learn rust", "is_private": false, "creator_id": 3}
+{"ch_name": "learn-rust-chan2", "ch_desc": "Let's learn rust", "is_private": false, "creator_id": 2}
+
+### list channels
+GET http://localhost:6869/api/v1/channels
+Content-Type: application/json
+
+{"creator_id": 3}
+
+
+### get channels
+GET http://localhost:6869/api/v1/channels/1
+Content-Type: application/json
+
+### join channel
+POST http://localhost:6869/api/v1/channels/join
+Content-Type: application/json
+
+{"user_id": 3, "chan_id": 1}
