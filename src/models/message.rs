@@ -18,6 +18,17 @@ pub struct Message {
     pub updated_at: chrono::DateTime<Utc>,
 }
 
+#[derive(Debug, FromRow, Serialize, Deserialize)]
+pub struct CreateMessage {
+    pub channel_id: i64,
+    pub sender_id: Option<i64>,
+    pub parent_msg_id: Option<i64>,
+    pub content_type: String,
+    pub text_content: String,
+    pub media_url: Option<String>,
+    pub media_metadata: Option<String>,
+}
+
 pub struct MessageStore<'a> {
     pub pool: &'a PgPool,
 }
@@ -27,7 +38,7 @@ impl<'a> MessageStore<'a> {
         Self { pool }
     }
 
-    pub async fn create(&self, new_message: &Message) -> Result<Message, AppError> {
+    pub async fn create(&self, new_message: &CreateMessage) -> Result<Message, AppError> {
         let message = sqlx::query_as(
             r#"
             INSERT INTO messages (
@@ -69,7 +80,7 @@ impl<'a> MessageStore<'a> {
         Ok(message)
     }
 
-    pub async fn update(pool: &PgPool, message: &Message) -> Result<Option<Message>, AppError> {
+    pub async fn update(&self, message: &Message) -> Result<Option<Message>, AppError> {
         let updated_message = sqlx::query_as(
             r#"
             UPDATE messages
@@ -85,14 +96,14 @@ impl<'a> MessageStore<'a> {
         .bind(&message.media_url)
         .bind(&message.media_metadata)
         .bind(&message.id)
-        .fetch_optional(pool)
+        .fetch_optional(self.pool)
         .await?;
 
         Ok(updated_message)
     }
 
     pub async fn list_by_channel(
-        pool: &PgPool,
+        &self,
         channel_id: i64,
         limit: i64,
         offset: i64,
@@ -108,13 +119,13 @@ impl<'a> MessageStore<'a> {
         .bind(channel_id)
         .bind(limit)
         .bind(offset)
-        .fetch_all(pool)
+        .fetch_all(self.pool)
         .await?;
 
         Ok(messages)
     }
 
-    pub async fn get_replies(pool: &PgPool, parent_msg_id: i64) -> Result<Vec<Message>, AppError> {
+    pub async fn get_replies(&self, parent_msg_id: i64) -> Result<Vec<Message>, AppError> {
         let replies = sqlx::query_as(
             r#"
             SELECT * FROM messages 
@@ -123,7 +134,7 @@ impl<'a> MessageStore<'a> {
             "#,
         )
         .bind(parent_msg_id)
-        .fetch_all(pool)
+        .fetch_all(self.pool)
         .await?;
 
         Ok(replies)

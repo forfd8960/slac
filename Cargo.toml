@@ -10,6 +10,7 @@ axum = { version = "0.8.1", features = [
     "query",
     "tracing",
     "multipart",
+    "macros"
 ]}
 axum-extra = { version = "0.10.0", features = ["typed-header"] }
 thiserror = "2.0.12"

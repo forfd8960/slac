@@ -21,10 +21,13 @@ pub async fn get_router(state: AppState) -> Result<Router, AppError> {
         .route("/index", get(index))
         .route("/api/v1/users/register", post(register))
         .route("/api/v1/users/login", post(login))
-        .route("/api/v1/channels/join", post(join_channel))
-        .route("/api/v1/channels/leave", post(leave_channel))
+        .route("/api/v1/channels/{channel_id}/join", post(join_channel))
+        .route("/api/v1/channels/{channel_id}/leave", post(leave_channel))
         .route("/api/v1/channels/{channel_id}", get(get_channel))
-        .route("/api/v1/channels/{channel_id}/messages", get(list_messages))
+        .route(
+            "/api/v1/channels/{channel_id}/messages",
+            get(list_messages).post(send_message),
+        )
         .route("/api/v1/channels", post(create_channel).get(list_channels))
         .route("/api/v1/messages", post(send_message).put(update_message))
         .with_state(state);
