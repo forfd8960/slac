@@ -5,8 +5,9 @@ use axum::{
 };
 
 use crate::{
-    dto::message::ListMessagesReq,
+    dto::message::{ListMessagesReq, Message, SendMessageReq},
     errors::AppError,
+    models::message::Message as MessageDao,
     models::{channel::ChanRepository, message::MessageStore, user::UserRepository},
     service::message::MsgService,
     state::AppState,
@@ -26,13 +27,29 @@ pub async fn list_messages(
     let msg_store = MessageStore::new(&state.pool);
     let msg_service = MsgService::new(&chan_repo, &user_repo, &msg_store);
 
-    let resp = msg_service.list_messages(channel_id, &req).await?;
+    let messages = msg_service.list_messages(channel_id, &req).await?;
+    let resp: Vec<Message> = messages.into_iter().map(|v| v.into()).collect();
     println!("list msg resp: {:?}", resp);
     Ok(Json(resp))
 }
 
-pub async fn send_message() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World")
+pub async fn send_message_to_channel(
+    State(state): State<AppState>,
+    Path(channel_id): Path<i64>,
+    Json(req): Json<SendMessageReq>,
+) -> Result<impl IntoResponse, AppError> {
+    println!("send messages to {}", channel_id);
+    println!("send message req: {:?}", req);
+
+    let user_repo = UserRepository::new(&state.pool);
+    let chan_repo = ChanRepository::new(&state.pool);
+    let msg_store = MessageStore::new(&state.pool);
+    let msg_service = MsgService::new(&chan_repo, &user_repo, &msg_store);
+
+    let msg_dao = msg_service.send_message(channel_id, &req).await?;
+    let resp: Message = msg_dao.into();
+    println!("send msg resp: {:?}", resp);
+    Ok(Json(resp))
 }
 
 pub async fn update_message() -> Result<impl IntoResponse, AppError> {

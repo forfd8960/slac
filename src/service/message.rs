@@ -1,3 +1,5 @@
+use serde_json::json;
+
 use crate::{
     dto::message::{ListMessagesReq, SendMessageReq},
     errors::AppError,
@@ -50,6 +52,7 @@ impl<'a> MsgService<'a> {
             return Err(AppError::NotFound("channel not found".to_string()));
         }
 
+        let media_meta = json!(send_req.media_metadata);
         let msg = self
             .msg_store
             .create(&CreateMessage {
@@ -59,7 +62,7 @@ impl<'a> MsgService<'a> {
                 content_type: send_req.content_type.clone().into(),
                 text_content: send_req.text_content.clone(),
                 media_url: send_req.media_url.clone(),
-                media_metadata: send_req.media_metadata.clone(),
+                media_metadata: media_meta,
             })
             .await?;
 

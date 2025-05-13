@@ -38,8 +38,15 @@ Content-Type: application/json
 
 {"user_id": 3, "chan_id": 1}
 
-### send message
+### list message
 GET http://localhost:6869/api/v1/channels/2/messages
 Content-Type: application/json
 
 {"offset": 0, "limit": 100}
+
+
+### send message
+POST http://localhost:6869/api/v1/channels/1/messages
+Content-Type: application/json
+
+{"sender_id": null, "parent_msg_id": null, "content_type": "text", "text_content": "Hello, My Friend", "media_url": null, "media_metadata": null}

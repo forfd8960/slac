@@ -1,32 +1,41 @@
 use chrono::Utc;
-use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 
 use crate::errors::AppError;
 
-#[derive(Debug, FromRow, Serialize, Deserialize)]
+#[derive(sqlx::Type, Debug, PartialEq, Eq)]
+#[sqlx(type_name = "message_content_type", rename_all = "lowercase")]
+pub enum MessageContentType {
+    Text,
+    Image,
+    Video,
+    File,
+    System,
+}
+
+#[derive(Debug, FromRow)]
 pub struct Message {
     pub id: i64,
     pub channel_id: i64,
     pub sender_id: Option<i64>,
     pub parent_msg_id: Option<i64>,
-    pub content_type: String,
+    pub content_type: MessageContentType,
     pub text_content: String,
     pub media_url: Option<String>,
-    pub media_metadata: Option<String>,
+    pub media_metadata: serde_json::Value,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
 }
 
-#[derive(Debug, FromRow, Serialize, Deserialize)]
+#[derive(Debug, FromRow)]
 pub struct CreateMessage {
     pub channel_id: i64,
     pub sender_id: Option<i64>,
     pub parent_msg_id: Option<i64>,
-    pub content_type: String,
+    pub content_type: MessageContentType,
     pub text_content: String,
     pub media_url: Option<String>,
-    pub media_metadata: Option<String>,
+    pub media_metadata: serde_json::Value,
 }
 
 pub struct MessageStore<'a> {
@@ -39,18 +48,21 @@ impl<'a> MessageStore<'a> {
     }
 
     pub async fn create(&self, new_message: &CreateMessage) -> Result<Message, AppError> {
+        println!("content type: {:?}", new_message.content_type);
+
+        // // as "state: ServiceState"
         let message = sqlx::query_as(
             r#"
             INSERT INTO messages (
                 channel_id, 
                 sender_id, 
                 parent_msg_id, 
-                content_type, 
+                content_type,  
                 text_content, 
                 media_url, 
                 media_metadata
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
             RETURNING *
             "#,
         )
