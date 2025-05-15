@@ -48,12 +48,21 @@ pub struct GetChanResp {
 #[derive(Debug, Deserialize)]
 pub struct JoinChanReq {
     pub user_id: i64,
-    pub chan_id: i64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LeaveChanReq {
+    pub user_id: i64,
 }
 
 #[derive(Debug, Serialize)]
 pub struct JoinChanResp {
-    pub chan_member: ChannelMembers,
+    pub chan_members: ChannelMembers,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LeaveChanResp {
+    pub chan_members: Vec<ChannelMembers>,
 }
 
 impl From<ChanDao> for Channel {

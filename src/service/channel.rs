@@ -1,7 +1,7 @@
 use crate::{
     dto::channel::{
         Channel as ChanDto, CreateChannelRequest, CreateChannelResp, GetChanResp, JoinChanResp,
-        ListChanReq, ListChanResp,
+        LeaveChanResp, ListChanReq, ListChanResp,
     },
     errors::AppError,
     models::{
@@ -83,11 +83,36 @@ impl<'a> ChannelService<'a> {
             return Err(AppError::NotFound(format!("user: {} not found", user_id)));
         }
 
-        let chan_member = self
+        let chan_members = self
             .chan_store
             .add_channel_member(channel_id, user_id)
             .await?;
 
-        Ok(JoinChanResp { chan_member })
+        Ok(JoinChanResp { chan_members })
+    }
+
+    pub async fn leave_channel(
+        &self,
+        user_id: i64,
+        channel_id: i64,
+    ) -> Result<LeaveChanResp, AppError> {
+        let channel = self.chan_store.get_by_id(channel_id).await?;
+        if channel.is_none() {
+            return Err(AppError::NotFound("channel not found".to_string()));
+        }
+
+        let user = self.user_store.get_by_id(user_id).await?;
+        if user.is_none() {
+            return Err(AppError::NotFound(format!("user: {} not found", user_id)));
+        }
+
+        let _ = self
+            .chan_store
+            .remove_channel_member(channel_id, user_id)
+            .await?;
+
+        let chan_members = self.chan_store.list_channel_members(channel_id).await?;
+
+        Ok(LeaveChanResp { chan_members })
     }
 }

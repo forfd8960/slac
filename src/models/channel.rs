@@ -154,4 +154,23 @@ impl<'a> ChanRepository<'a> {
 
         Ok(chan_member)
     }
+
+    pub async fn remove_channel_member(
+        &self,
+        channel_id: i64,
+        user_id: i64,
+    ) -> Result<u64, AppError> {
+        let res = sqlx::query(
+            r#"
+            DELETE FROM channel_members 
+            WHERE user_id=$1 AND channel_id=$2
+            "#,
+        )
+        .bind(user_id)
+        .bind(channel_id)
+        .execute(self.pool)
+        .await?;
+
+        Ok(res.rows_affected())
+    }
 }

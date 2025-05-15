@@ -62,6 +62,7 @@ pub async fn get_channel(
 
 pub async fn join_channel(
     State(state): State<AppState>,
+    Path(channel_id): Path<i64>,
     Json(req): Json<JoinChanReq>,
 ) -> Result<impl IntoResponse, AppError> {
     println!("join channel req: {:?}", req);
@@ -70,11 +71,21 @@ pub async fn join_channel(
     let chan_repo = ChanRepository::new(&state.pool);
     let chan_service = ChannelService::new(&chan_repo, &user_repo);
 
-    let resp = chan_service.join_channel(req.user_id, req.chan_id).await?;
+    let resp = chan_service.join_channel(req.user_id, channel_id).await?;
     println!("join channel response: {:?}", resp);
     Ok(Json(resp))
 }
 
-pub async fn leave_channel() -> Result<impl IntoResponse, AppError> {
-    Ok("Hello, World!")
+pub async fn leave_channel(
+    State(state): State<AppState>,
+    Path(channel_id): Path<i64>,
+    Json(req): Json<JoinChanReq>,
+) -> Result<impl IntoResponse, AppError> {
+    let user_repo = UserRepository::new(&state.pool);
+    let chan_repo = ChanRepository::new(&state.pool);
+    let chan_service = ChannelService::new(&chan_repo, &user_repo);
+
+    let resp = chan_service.leave_channel(req.user_id, channel_id).await?;
+    println!("leave channel response: {:?}", resp);
+    Ok(Json(resp))
 }
