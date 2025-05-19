@@ -65,6 +65,11 @@ pub struct LeaveChanResp {
     pub chan_members: Vec<ChannelMembers>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct ListChanMembersResp {
+    pub chan_members_list: Vec<ChannelMembers>,
+}
+
 impl From<ChanDao> for Channel {
     fn from(ch: ChanDao) -> Self {
         Self {

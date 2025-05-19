@@ -52,6 +52,27 @@ pub async fn send_message_to_channel(
     Ok(Json(resp))
 }
 
+pub async fn get_message(
+    State(state): State<AppState>,
+    Path(message_id): Path<i64>,
+) -> Result<impl IntoResponse, AppError> {
+    println!("get message {}", message_id);
+
+    let user_repo = UserRepository::new(&state.pool);
+    let chan_repo = ChanRepository::new(&state.pool);
+    let msg_store = MessageStore::new(&state.pool);
+    let msg_service = MsgService::new(&chan_repo, &user_repo, &msg_store);
+
+    let msg_dao = msg_service.get_message(message_id).await?;
+    if msg_dao.is_none() {
+        return Err(AppError::NotFound("message not found".to_string()));
+    }
+
+    let resp: Message = msg_dao.unwrap().into();
+    println!("get msg resp: {:?}", resp);
+    Ok(Json(resp))
+}
+
 pub async fn update_message() -> Result<impl IntoResponse, AppError> {
     Ok("Hello, World")
 }

@@ -1,7 +1,7 @@
 use crate::{
     dto::channel::{
         Channel as ChanDto, CreateChannelRequest, CreateChannelResp, GetChanResp, JoinChanResp,
-        LeaveChanResp, ListChanReq, ListChanResp,
+        LeaveChanResp, ListChanMembersResp, ListChanReq, ListChanResp,
     },
     errors::AppError,
     models::{
@@ -55,6 +55,14 @@ impl<'a> ChannelService<'a> {
         Ok(ListChanResp {
             channels: chan_list.into_iter().map(|ch| ChanDto::from(ch)).collect(),
         })
+    }
+
+    pub async fn list_channel_members(
+        &self,
+        chan_id: i64,
+    ) -> Result<ListChanMembersResp, AppError> {
+        let chan_members_list = self.chan_store.list_channel_members(chan_id).await?;
+        Ok(ListChanMembersResp { chan_members_list })
     }
 
     pub async fn get_channel(&self, channel_id: i64) -> Result<GetChanResp, AppError> {

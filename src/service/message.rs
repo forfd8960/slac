@@ -29,6 +29,11 @@ impl<'a> MsgService<'a> {
         }
     }
 
+    pub async fn get_message(&self, msg_id: i64) -> Result<Option<Message>, AppError> {
+        let message = self.msg_store.get_by_id(msg_id).await?;
+        Ok(message)
+    }
+
     pub async fn list_messages(
         &self,
         chan_id: i64,

@@ -12,7 +12,7 @@ Content-Type: application/json
 POST http://localhost:6869/api/v1/users/register
 Content-Type: application/json
 
-{"username": "xiaoming_123", "password": "test-Pwd123@#", "avatar": "http://localhost:6869/imgs/alex_avatar.png", "display_name": "Xiao Ming"}
+{"username": "Alice_123", "password": "test-Pwd123@#", "avatar": "http://localhost:6869/imgs/alice_avatar.png", "display_name": "Alice"}
 
 
 ### create channel
@@ -32,17 +32,32 @@ Content-Type: application/json
 GET http://localhost:6869/api/v1/channels/1
 Content-Type: application/json
 
-### join channel
-POST http://localhost:6869/api/v1/channels/join
+### list channel members
+GET http://localhost:6869/api/v1/channels/1/members
 Content-Type: application/json
 
-{"user_id": 3, "chan_id": 1}
+### join channel
+POST http://localhost:6869/api/v1/channels/1/join
+Content-Type: application/json
+
+{"user_id": 5}
+
+### leave channel
+DELETE http://localhost:6869/api/v1/channels/1/leave
+Content-Type: application/json
+
+{"user_id": 5}
 
 ### list message
-GET http://localhost:6869/api/v1/channels/2/messages
+GET http://localhost:6869/api/v1/channels/1/messages
 Content-Type: application/json
 
 {"offset": 0, "limit": 100}
+
+
+### get message
+GET http://localhost:6869/api/v1/messages/10
+Content-Type: application/json
 
 
 ### send message

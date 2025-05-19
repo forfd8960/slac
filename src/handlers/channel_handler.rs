@@ -89,3 +89,18 @@ pub async fn leave_channel(
     println!("leave channel response: {:?}", resp);
     Ok(Json(resp))
 }
+
+pub async fn list_channel_memebers(
+    State(state): State<AppState>,
+    Path(channel_id): Path<i64>,
+) -> Result<impl IntoResponse, AppError> {
+    println!("list channel {} members", channel_id);
+
+    let user_repo = UserRepository::new(&state.pool);
+    let chan_repo = ChanRepository::new(&state.pool);
+    let chan_service = ChannelService::new(&chan_repo, &user_repo);
+
+    let resp = chan_service.list_channel_members(channel_id).await?;
+    println!("list members response: {:?}", resp);
+    Ok(Json(resp))
+}
