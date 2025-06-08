@@ -17,9 +17,7 @@ async fn main() -> anyhow::Result<()> {
     let pool = PgPool::connect(&database_url).await?;
     println!("connected database: {:?}", pool);
 
-    let (tx, _rx) = broadcast::channel(100);
-
-    let state = AppState::new(pool, tx)?;
+    let state = AppState::new(pool)?;
     let router = get_router(state).await?;
 
     let addr = format!("0.0.0.0:{}", "6869");

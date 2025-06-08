@@ -1,7 +1,7 @@
 use axum::{
     Router,
     response::IntoResponse,
-    routing::{delete, get, post, put},
+    routing::{any, delete, get, post, put},
 };
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
 pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     let api_router = Router::new()
         .route("/index", get(index))
-        .route("/websocket", get(message_loop))
+        .route("/{user_id}/websocket", any(message_loop))
         .route("/api/v1/users/register", post(register))
         .route("/api/v1/users/login", post(login))
         .route("/api/v1/channels/{channel_id}/join", post(join_channel))

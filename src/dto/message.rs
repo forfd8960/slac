@@ -21,7 +21,7 @@ pub enum MessageContentType {
     System,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Message {
     pub id: i64,
     pub channel_id: i64,
@@ -72,6 +72,12 @@ pub struct ListMessagesReq {
 pub struct ListMessagesResp {
     pub msgs: Vec<Message>,
     pub has_more: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SendMessageInSocket {
+    pub channel_id: i64,
+    pub msgs: Vec<Message>,
 }
 
 impl From<MessageDao> for Message {
