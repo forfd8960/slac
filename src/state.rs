@@ -1,10 +1,10 @@
 use sqlx::PgPool;
 use std::{ops::Deref, sync::Arc};
+use tokio::sync::broadcast;
 
 use crate::{
     auth::{DecodingKey, EncodingKey},
     errors::AppError,
-    service::user::UserService,
 };
 
 #[derive(Clone)]
@@ -13,10 +13,10 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(pool: PgPool) -> Result<Self, AppError> {
+    pub fn new(pool: PgPool, tx: broadcast::Sender<String>) -> Result<Self, AppError> {
         let ek = EncodingKey::load(include_str!("../private_key.pem"))?;
         let dk = DecodingKey::load(include_str!("../public_key.pem"))?;
-        let inner = Arc::new(AppStateInner { pool, ek, dk });
+        let inner = Arc::new(AppStateInner { pool, ek, dk, tx });
 
         Ok(Self { inner })
     }
@@ -34,4 +34,5 @@ pub struct AppStateInner {
     pub pool: PgPool,
     pub ek: EncodingKey,
     pub dk: DecodingKey,
+    pub tx: broadcast::Sender<String>,
 }

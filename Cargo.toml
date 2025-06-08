@@ -10,7 +10,8 @@ axum = { version = "0.8.1", features = [
     "query",
     "tracing",
     "multipart",
-    "macros"
+    "macros",
+    "ws"
 ]}
 axum-extra = { version = "0.10.0", features = ["typed-header"] }
 thiserror = "2.0.12"
@@ -34,3 +35,4 @@ regex = "1.11.1"
 argon2 = { version = "0.5.3", features = ["std"] }
 validator = { version = "0.20.0", features = ["derive"] }
 jwt-simple = "0.12.12"
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }

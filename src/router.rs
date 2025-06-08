@@ -13,6 +13,7 @@ use crate::{
         },
         message_handler::{get_message, list_messages, send_message_to_channel, update_message},
         user_handler::{login, register},
+        websocket::message_loop,
     },
     state::AppState,
 };
@@ -20,6 +21,7 @@ use crate::{
 pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     let api_router = Router::new()
         .route("/index", get(index))
+        .route("/websocket", get(message_loop))
         .route("/api/v1/users/register", post(register))
         .route("/api/v1/users/login", post(login))
         .route("/api/v1/channels/{channel_id}/join", post(join_channel))

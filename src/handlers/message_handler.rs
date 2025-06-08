@@ -7,7 +7,6 @@ use axum::{
 use crate::{
     dto::message::{ListMessagesReq, Message, SendMessageReq},
     errors::AppError,
-    models::message::Message as MessageDao,
     models::{channel::ChanRepository, message::MessageStore, user::UserRepository},
     service::message::MsgService,
     state::AppState,

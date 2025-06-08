@@ -3,6 +3,7 @@ use slac::{router::get_router, state::AppState};
 use sqlx::PgPool;
 use std::env;
 use tokio::net::TcpListener;
+use tokio::sync::broadcast;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -16,7 +17,9 @@ async fn main() -> anyhow::Result<()> {
     let pool = PgPool::connect(&database_url).await?;
     println!("connected database: {:?}", pool);
 
-    let state = AppState::new(pool)?;
+    let (tx, _rx) = broadcast::channel(100);
+
+    let state = AppState::new(pool, tx)?;
     let router = get_router(state).await?;
 
     let addr = format!("0.0.0.0:{}", "6869");
