@@ -1,51 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>WebSocket Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat Example</h1>
 
-        <!-- <input id="username" style="display:block; width:100px; box-sizing: border-box" type="text" placeholder="username"> -->
-        <button id="join-chat" type="button">Join Chat</button>
-        <textarea id="chat" style="display:block; width:600px; height:400px; box-sizing: border-box" cols="30" rows="10"></textarea>
-        <input id="input" style="display:block; width:600px; box-sizing: border-box" type="text" placeholder="chat">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+</head>
 
-        <script>
-            const join_btn = document.querySelector("#join-chat");
-            const textarea = document.querySelector("#chat");
-            const input = document.querySelector("#input");
+<body>
+    <h1>WebSocket Chat Example</h1>
 
-            join_btn.addEventListener("click", function(e) {
-                this.disabled = true;
+    <!-- <input id="username" style="display:block; width:100px; box-sizing: border-box" type="text" placeholder="username"> -->
+    <label for="number-select">Choose a user:</label>
+    <select id="user-id-select" name="user_id">
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+    </select>
 
-                const websocket = new WebSocket("ws://localhost:6869/websocket");
+    <button id="join-chat" type="button">Join Chat</button>
+    <textarea id="chat" style="display:block; width:600px; height:400px; box-sizing: border-box" cols="30"
+        rows="10"></textarea>
+    <input id="input" style="display:block; width:600px; box-sizing: border-box" type="text" placeholder="chat">
 
-                websocket.onopen = function() {
-                    console.log("connection opened");
-                    websocket.send("Hello, Everyone");
+    <script>
+        const join_btn = document.querySelector("#join-chat");
+        const textarea = document.querySelector("#chat");
+        const input = document.querySelector("#input");
+
+        join_btn.addEventListener("click", function (e) {
+            const selectElement = document.getElementById('user-id-select');
+    const selectedValue = selectElement.value;
+            console.log("user id: "+selectedValue);
+            
+            this.disabled = true;
+            const websocket = new WebSocket("ws://localhost:6869/"+selectedValue+"/websocket");
+
+            websocket.onopen = function () {
+                console.log("connection opened");
+                websocket.send("Hello, Everyone");
+            }
+
+            const btn = this;
+
+            websocket.onclose = function () {
+                console.log("connection closed");
+                btn.disabled = false;
+            }
+
+            websocket.onmessage = function (e) {
+                console.log("received message: " + e.data);
+                textarea.value += e.data + "\r\n";
+            }
+
+            input.onkeydown = function (e) {
+                if (e.key == "Enter") {
+                    const jsonObject = {
+                        "channel_id": 1,
+                        "msgs": [
+                            {
+                                "content_type": "text",
+                                "text_content": input.value
+                            }
+                        ]
+                    };
+
+                    // 3. Convert the JSON object to a string
+                    const jsonString = JSON.stringify(jsonObject);
+                    console.log(jsonString);
+                    websocket.send(jsonString);
+                    input.value = "";
                 }
+            }
+        });
+    </script>
+</body>
 
-                const btn = this;
-
-                websocket.onclose = function() {
-                    console.log("connection closed");
-                    btn.disabled = false;
-                }
-
-                websocket.onmessage = function(e) {
-                    console.log("received message: "+e.data);
-                    textarea.value += e.data+"\r\n";
-                }
-
-                input.onkeydown = function(e) {
-                    if (e.key == "Enter") {
-                        websocket.send(input.value);
-                        input.value = "";
-                    }
-                }
-            });
-        </script>
-    </body>
 </html>

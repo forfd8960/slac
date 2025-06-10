@@ -77,7 +77,7 @@ pub struct ListMessagesResp {
 #[derive(Debug, Deserialize)]
 pub struct SendMessageInSocket {
     pub channel_id: i64,
-    pub msgs: Vec<Message>,
+    pub msgs: Vec<SendMessageReq>,
 }
 
 impl From<MessageDao> for Message {

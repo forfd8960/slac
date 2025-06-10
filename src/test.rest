@@ -52,7 +52,7 @@ Content-Type: application/json
 GET http://localhost:6869/api/v1/channels/1/messages
 Content-Type: application/json
 
-{"offset": 0, "limit": 100}
+{"offset": 0, "limit": 10}
 
 
 ### get message

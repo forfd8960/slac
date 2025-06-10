@@ -1,9 +1,10 @@
 use crate::{
-    dto::{message::SendMessageInSocket, user},
+    dto::message::SendMessageInSocket,
     errors::AppError,
-    handlers::list_channel_memebers,
+    handlers::{list_channel_memebers, send_message_to_channel},
     state::AppState,
 };
+
 use axum::{
     extract::{
         Path, State,
@@ -19,7 +20,8 @@ pub async fn message_loop(
     State(state): State<AppState>,
     Path(user_id): Path<i64>,
 ) -> Result<impl IntoResponse, AppError> {
-    Ok(ws.on_upgrade(move |socket| handle_socket(user_id, socket, state)))
+    let resp = ws.on_upgrade(move |socket| handle_socket(user_id, socket, state));
+    Ok(resp)
 }
 
 async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
@@ -27,8 +29,10 @@ async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
     let (mut sender, mut receiver) = stream.split();
 
     let (tx, mut rx) = broadcast::channel(100);
-    let mut hash_map = state.tx_set.write().await;
-    hash_map.insert(user_id, tx);
+    {
+        let mut hash_map = state.tx_set.write().await;
+        hash_map.insert(user_id, tx);
+    }
 
     // Spawn the first task that will receive broadcast messages and send text
     // messages over the websocket to our client.
@@ -52,7 +56,10 @@ async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
             println!("received msg from client: {}", text);
             let send_msg_opt: Option<SendMessageInSocket> = match serde_json::from_str(&text) {
                 Ok(v) => Some(v),
-                Err(e) => None,
+                Err(e) => {
+                    println!("get send message from socket error: {}", e);
+                    None
+                }
             };
 
             if send_msg_opt.is_none() {
@@ -69,12 +76,21 @@ async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
                         let sender_opt = tx_set.get(&member.user_id);
                         if sender_opt.is_some() {
                             for msg in &send_msg.msgs {
+                                match send_message_to_channel(&state.pool, send_msg.channel_id, msg)
+                                    .await
+                                {
+                                    Ok(_) => {
+                                        println!("created msg in channel: {}", send_msg.channel_id)
+                                    }
+                                    Err(e) => println!("create msg error: {}", e),
+                                }
+
                                 let _ = sender_opt.unwrap().send(format!("{}", msg.text_content));
                             }
                         }
                     }
                 }
-                Err(e) => println!("{}", e),
+                Err(e) => println!("list channel members error: {}", e),
             }
         }
     });

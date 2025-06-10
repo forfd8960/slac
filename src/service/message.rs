@@ -41,7 +41,7 @@ impl<'a> MsgService<'a> {
     ) -> Result<Vec<Message>, AppError> {
         let messages = self
             .msg_store
-            .list_by_channel(chan_id, list_req.offset, list_req.limit)
+            .list_by_channel(chan_id, list_req.limit, list_req.offset)
             .await?;
 
         Ok(messages)
