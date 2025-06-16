@@ -5,7 +5,7 @@ use axum::{
 };
 
 use crate::{
-    dto::message::{ListMessagesReq, Message, SendMessageReq},
+    dto::message::{ListMessagesReq, ListMessagesResp, Message, SendMessageReq},
     errors::AppError,
     models::{channel::ChanRepository, message::MessageStore, user::UserRepository},
     service::message::MsgService,
@@ -27,7 +27,11 @@ pub async fn list_messages(
     let msg_service = MsgService::new(&chan_repo, &user_repo, &msg_store);
 
     let messages = msg_service.list_messages(channel_id, &req).await?;
-    let resp: Vec<Message> = messages.into_iter().map(|v| v.into()).collect();
+    let messages1: Vec<Message> = messages.into_iter().map(|v| v.into()).collect();
+    let resp = ListMessagesResp {
+        msgs: messages1,
+        has_more: false,
+    };
     println!("list msg resp: {:?}", resp);
     Ok(Json(resp))
 }

@@ -1,4 +1,8 @@
-use axum::{Json, extract::State, response::IntoResponse};
+use axum::{
+    Json,
+    extract::{Path, State},
+    response::IntoResponse,
+};
 
 use crate::{
     dto::user::{LoginReq, RegisterRequest},
@@ -32,5 +36,16 @@ pub async fn login(
     let user_service = UserService::new(&user_repo, &state.ek, &state.dk);
 
     let resp = user_service.login(&req).await?;
+    Ok(Json(resp))
+}
+
+pub async fn get_user(
+    State(state): State<AppState>,
+    Path(user_id): Path<i64>,
+) -> Result<impl IntoResponse, AppError> {
+    let user_repo = UserRepository::new(&state.pool);
+    let user_service = UserService::new(&user_repo, &state.ek, &state.dk);
+
+    let resp = user_service.get_user(user_id).await?;
     Ok(Json(resp))
 }

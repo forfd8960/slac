@@ -5,14 +5,19 @@ GET http://localhost:6869/index
 POST http://localhost:6869/api/v1/users/login
 Content-Type: application/json
 
-{"username": "alex", "password": "test-pwd123@#"}
+{"username": "Smith_123", "password": "test-Pwd123@#"}
 
 
 ### regiser user
 POST http://localhost:6869/api/v1/users/register
 Content-Type: application/json
 
-{"username": "Alice_123", "password": "test-Pwd123@#", "avatar": "http://localhost:6869/imgs/alice_avatar.png", "display_name": "Alice"}
+{"username": "Smith_123", "password": "test", "avatar": "http://localhost:6869/imgs/alice_avatar.png", "display_name": "SMS"}
+
+
+### get user
+GET http://localhost:6869/api/v1/users/6
+Content-Type: application/json
 
 
 ### create channel

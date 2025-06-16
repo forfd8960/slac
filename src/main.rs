@@ -3,7 +3,6 @@ use slac::{router::get_router, state::AppState};
 use sqlx::PgPool;
 use std::env;
 use tokio::net::TcpListener;
-use tokio::sync::broadcast;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

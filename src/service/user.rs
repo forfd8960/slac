@@ -83,6 +83,14 @@ impl<'a> UserService<'a> {
             None => Err(AppError::NotFound("user not found".to_string())),
         }
     }
+
+    pub async fn get_user(&self, user_id: i64) -> Result<UserDto, AppError> {
+        let user_res = self.user_store.get_by_id(user_id).await?;
+        match user_res {
+            Some(user) => Ok(UserDto::from(user)),
+            None => Err(AppError::NotFound("user not found".to_string())),
+        }
+    }
 }
 
 fn validate_password(password: &str, min_len: usize, max_len: usize) -> Result<(), AppError> {

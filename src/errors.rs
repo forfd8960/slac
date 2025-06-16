@@ -1,5 +1,7 @@
+use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -24,6 +26,12 @@ pub enum AppError {
     PasswordHashError(#[from] argon2::password_hash::Error),
 }
 
+#[derive(Serialize)]
+struct ErrorResponse {
+    error: String,
+    code: u16,
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let status_code = match self {
@@ -36,6 +44,12 @@ impl IntoResponse for AppError {
             AppError::AlreadyExists(_) => StatusCode::CONFLICT,
         };
 
-        (status_code, format!("{:?}", self)).into_response()
+        // Create a JSON error response
+        let error_response = ErrorResponse {
+            error: format!("{:?}", self),
+            code: status_code.as_u16(),
+        };
+
+        (status_code, Json(error_response)).into_response()
     }
 }
