@@ -36,3 +36,5 @@ argon2 = { version = "0.5.3", features = ["std"] }
 validator = { version = "0.20.0", features = ["derive"] }
 jwt-simple = "0.12.12"
 futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
+tower = "0.5.2"
+tower-http = { version = "0.6.6", features = ["cors"]}

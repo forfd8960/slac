@@ -5,7 +5,7 @@ use axum::{
 };
 
 use crate::{
-    dto::channel::{CreateChannelRequest, JoinChanReq, ListChanReq},
+    dto::channel::{CreateChannelRequest, JoinChanReq, ListChanReq, ListUserChannels},
     errors::AppError,
     models::{channel::ChanRepository, user::UserRepository},
     service::channel::ChannelService,
@@ -102,5 +102,26 @@ pub async fn list_channel_memebers(
 
     let resp = chan_service.list_channel_members(channel_id).await?;
     println!("list members response: {:?}", resp);
+    Ok(Json(resp))
+}
+
+pub async fn list_user_channels(
+    State(state): State<AppState>,
+    Path(user_id): Path<i64>,
+) -> Result<impl IntoResponse, AppError> {
+    println!("list user: {} channels", user_id);
+
+    let user_repo = UserRepository::new(&state.pool);
+    let chan_repo = ChanRepository::new(&state.pool);
+    let chan_service = ChannelService::new(&chan_repo, &user_repo);
+
+    let resp = chan_service
+        .list_user_channels(&ListUserChannels {
+            user_id,
+            offset: 0,
+            limit: 100,
+        })
+        .await?;
+    println!("list user channels response: {:?}", resp);
     Ok(Json(resp))
 }

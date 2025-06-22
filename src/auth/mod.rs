@@ -17,9 +17,9 @@ impl EncodingKey {
         Ok(Self(Ed25519KeyPair::from_pem(pem)?))
     }
 
-    pub fn sign(&self, user: impl Into<User>) -> Result<String, jwt_simple::Error> {
+    pub fn sign(&self, user: User) -> Result<String, jwt_simple::Error> {
         let claims: JWTClaims<User> =
-            Claims::with_custom_claims(user.into(), Duration::from_secs(JWT_DURATION));
+            Claims::with_custom_claims(user, Duration::from_secs(JWT_DURATION));
 
         let claims = claims.with_issuer(JWT_ISS).with_audience(JWT_AUD);
         self.0.sign(claims)

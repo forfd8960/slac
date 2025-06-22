@@ -40,6 +40,13 @@ pub struct ListChanResp {
     pub channels: Vec<Channel>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct ListUserChannels {
+    pub user_id: i64,
+    pub offset: i64,
+    pub limit: i64,
+}
+
 #[derive(Debug, Serialize)]
 pub struct GetChanResp {
     pub channel: Option<Channel>,

@@ -5,18 +5,22 @@ GET http://localhost:6869/index
 POST http://localhost:6869/api/v1/users/login
 Content-Type: application/json
 
-{"username": "Smith_123", "password": "test-Pwd123@#"}
+{"username": "Alice619", "password": "test-Pwd123@#"}
 
 
 ### regiser user
 POST http://localhost:6869/api/v1/users/register
 Content-Type: application/json
 
-{"username": "Smith_123", "password": "test", "avatar": "http://localhost:6869/imgs/alice_avatar.png", "display_name": "SMS"}
+{"username": "Alice_2", "password": "test-Pwd123@#", "avatar": "http://localhost:6869/imgs/alice_avatar.png", "display_name": "ALice"}
 
 
 ### get user
 GET http://localhost:6869/api/v1/users/6
+Content-Type: application/json
+
+### Get user channels
+GET http://localhost:6869/api/v1/users/6/channels
 Content-Type: application/json
 
 
@@ -24,7 +28,7 @@ Content-Type: application/json
 POST http://localhost:6869/api/v1/channels
 Content-Type: application/json
 
-{"ch_name": "learn-rust-chan2", "ch_desc": "Let's learn rust", "is_private": false, "creator_id": 2}
+{"ch_name": "learn-rust-chan2", "ch_desc": "Let's learn rust", "is_private": false, "creator_id": 5}
 
 ### list channels
 GET http://localhost:6869/api/v1/channels
@@ -42,7 +46,7 @@ GET http://localhost:6869/api/v1/channels/1/members
 Content-Type: application/json
 
 ### join channel
-POST http://localhost:6869/api/v1/channels/1/join
+POST http://localhost:6869/api/v1/channels/2/join
 Content-Type: application/json
 
 {"user_id": 5}
@@ -57,7 +61,7 @@ Content-Type: application/json
 GET http://localhost:6869/api/v1/channels/1/messages
 Content-Type: application/json
 
-{"offset": 0, "limit": 10}
+{"offset": 0, "limit": 1}
 
 
 ### get message

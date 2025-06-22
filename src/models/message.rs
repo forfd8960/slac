@@ -124,7 +124,7 @@ impl<'a> MessageStore<'a> {
             r#"
             SELECT * FROM messages 
             WHERE channel_id = $1
-            ORDER BY created_at DESC
+            ORDER BY created_at ASC
             LIMIT $2 OFFSET $3
             "#,
         )

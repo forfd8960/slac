@@ -117,6 +117,22 @@ impl<'a> ChanRepository<'a> {
         Ok(channels)
     }
 
+    pub async fn list_user_channels(&self, user_id: i64) -> Result<Vec<Channel>, AppError> {
+        let chan_members = self.list_chan_members_by_user(user_id).await?;
+        let channel_ids: Vec<i64> = chan_members.into_iter().map(|cm| cm.channel_id).collect();
+
+        let channels = sqlx::query_as(
+            r#"
+            SELECT * FROM channels WHERE id = ANY($1)
+            "#,
+        )
+        .bind(channel_ids)
+        .fetch_all(self.pool)
+        .await?;
+
+        Ok(channels)
+    }
+
     pub async fn list_channel_members(
         &self,
         channel_id: i64,
@@ -127,6 +143,22 @@ impl<'a> ChanRepository<'a> {
             "#,
         )
         .bind(channel_id)
+        .fetch_all(self.pool)
+        .await?;
+
+        Ok(ch_members)
+    }
+
+    pub async fn list_chan_members_by_user(
+        &self,
+        user_id: i64,
+    ) -> Result<Vec<ChannelMembers>, AppError> {
+        let ch_members = sqlx::query_as(
+            r#"
+            SELECT * FROM channel_members WHERE user_id=$1
+            "#,
+        )
+        .bind(user_id)
         .fetch_all(self.pool)
         .await?;
 

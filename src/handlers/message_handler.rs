@@ -1,6 +1,6 @@
 use axum::{
     Json, debug_handler,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
 };
 
@@ -16,7 +16,7 @@ use crate::{
 pub async fn list_messages(
     State(state): State<AppState>,
     Path(channel_id): Path<i64>,
-    Json(req): Json<ListMessagesReq>,
+    Query(req): Query<ListMessagesReq>,
 ) -> Result<impl IntoResponse, AppError> {
     println!("list {} messages", channel_id);
     println!("list messages req: {:?}", req);

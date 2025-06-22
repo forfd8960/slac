@@ -45,6 +45,7 @@ pub struct LoginReq {
 
 #[derive(Debug, Serialize)]
 pub struct LoginResp {
+    pub user: User,
     pub token: String,
 }
 

@@ -80,12 +80,13 @@ async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
                                     .await
                                 {
                                     Ok(_) => {
+                                        let _ = sender_opt
+                                            .unwrap()
+                                            .send(format!("{}", msg.text_content));
                                         println!("created msg in channel: {}", send_msg.channel_id)
                                     }
                                     Err(e) => println!("create msg error: {}", e),
                                 }
-
-                                let _ = sender_opt.unwrap().send(format!("{}", msg.text_content));
                             }
                         }
                     }

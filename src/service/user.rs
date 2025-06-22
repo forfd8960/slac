@@ -77,8 +77,12 @@ impl<'a> UserService<'a> {
                     return Err(AppError::Unauthorized("password is correct".to_string()));
                 }
 
-                let tk = self.ek.sign(UserDto::from(user))?;
-                Ok(LoginResp { token: tk })
+                let user_info = UserDto::from(user);
+                let tk = self.ek.sign(user_info.clone())?;
+                Ok(LoginResp {
+                    user: user_info,
+                    token: tk,
+                })
             }
             None => Err(AppError::NotFound("user not found".to_string())),
         }
