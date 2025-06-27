@@ -2,6 +2,7 @@ use sqlx::{Pool, Postgres};
 
 use crate::{
     dto::{
+        SimpleUser,
         channel::ListChanMembersResp,
         message::{Message, SendMessageReq},
     },
@@ -47,4 +48,24 @@ pub async fn send_message_to_channel(
     let msg: Message = msg_dao.into();
     println!("msg: {:?}", msg);
     Ok(msg)
+}
+
+pub async fn list_simple_users(
+    pool: &Pool<Postgres>,
+    ids: Vec<i64>,
+) -> Result<Vec<SimpleUser>, AppError> {
+    let user_repo = UserRepository::new(pool);
+    let result = user_repo.get_user_by_ids(ids).await?;
+
+    let simple_users = result
+        .iter()
+        .map(|u| SimpleUser {
+            id: u.id,
+            display_name: u.display_name.clone(),
+            avatar_url: u.avatar_url.clone(),
+        })
+        .collect();
+
+    println!("list members response: {:?}", simple_users);
+    Ok(simple_users)
 }

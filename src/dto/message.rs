@@ -1,10 +1,11 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
+use crate::dto::SimpleUser;
 use crate::models::message::Message as MessageDao;
 use crate::models::message::MessageContentType as MessageCTDao;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct MediaMetadata {
     width: u32,
     height: u32,
@@ -38,6 +39,16 @@ pub struct Message {
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct SendMessageReq {
     pub sender_id: Option<i64>,
+    pub parent_msg_id: Option<i64>,
+    pub content_type: MessageContentType,
+    pub text_content: String,
+    pub media_url: Option<String>,
+    pub media_metadata: Option<MediaMetadata>,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct WebSocketMessage {
+    pub sender: SimpleUser,
     pub parent_msg_id: Option<i64>,
     pub content_type: MessageContentType,
     pub text_content: String,

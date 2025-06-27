@@ -106,6 +106,21 @@ impl<'a> UserRepository<'a> {
         Ok(user)
     }
 
+    pub async fn get_user_by_ids(&self, ids: Vec<i64>) -> Result<Vec<User>, AppError> {
+        let users = sqlx::query_as(
+            r#"
+            SELECT id, username, password_hash,display_name, is_active, avatar_url, created_at, updated_at
+            FROM users
+            WHERE id = any($1)
+            "#,
+        )
+        .bind(ids)
+        .fetch_all(self.pool)
+        .await?;
+
+        Ok(users)
+    }
+
     pub async fn get_by_username(&self, user_name: &String) -> Result<Option<User>, AppError> {
         let user = sqlx::query_as(
             r#"

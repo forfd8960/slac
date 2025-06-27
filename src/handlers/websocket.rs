@@ -1,7 +1,7 @@
 use crate::{
-    dto::message::SendMessageInSocket,
+    dto::message::{SendMessageInSocket, WebSocketMessage},
     errors::AppError,
-    handlers::{list_channel_memebers, send_message_to_channel},
+    handlers::{list_channel_memebers, list_simple_users, send_message_to_channel},
     state::AppState,
 };
 
@@ -72,23 +72,38 @@ async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
             match members_res {
                 Ok(members) => {
                     let tx_set = state.tx_set.read().await;
-                    for member in members.chan_members_list {
-                        let sender_opt = tx_set.get(&member.user_id);
-                        if sender_opt.is_some() {
-                            for msg in &send_msg.msgs {
-                                match send_message_to_channel(&state.pool, send_msg.channel_id, msg)
-                                    .await
-                                {
-                                    Ok(_) => {
-                                        let _ = sender_opt
-                                            .unwrap()
-                                            .send(format!("{}", msg.text_content));
+                    let member_ids: Vec<i64> = members
+                        .chan_members_list
+                        .iter()
+                        .map(|m| m.user_id)
+                        .collect();
+
+                    let senders_res = list_simple_users(&state.pool, member_ids).await;
+
+                    match senders_res {
+                        Ok(senders) => {
+                            for sender in senders {
+                                let sender_opt = tx_set.get(&sender.id);
+                                if sender_opt.is_some() {
+                                    for msg in &send_msg.msgs {
+                                        let socket_msg = WebSocketMessage {
+                                            sender: sender.clone(),
+                                            parent_msg_id: msg.parent_msg_id,
+                                            content_type: msg.content_type.clone(),
+                                            text_content: msg.text_content.clone(),
+                                            media_url: msg.media_url.clone(),
+                                            media_metadata: msg.media_metadata.clone(),
+                                        };
+
+                                        let msg_data = serde_json::to_string(&socket_msg).unwrap();
+
+                                        let _ = sender_opt.unwrap().send(msg_data);
                                         println!("created msg in channel: {}", send_msg.channel_id)
                                     }
-                                    Err(e) => println!("create msg error: {}", e),
                                 }
                             }
                         }
+                        Err(e) => println!("list simple users error: {}", e),
                     }
                 }
                 Err(e) => println!("list channel members error: {}", e),
@@ -100,4 +115,29 @@ async fn handle_socket(user_id: i64, stream: WebSocket, state: AppState) {
         _ = &mut send_task => recv_task.abort(),
         _ = &mut recv_task => send_task.abort(),
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::dto::SimpleUser;
+    use crate::dto::message::{MessageContentType, WebSocketMessage};
+
+    #[test]
+    fn test_websocket_message_output() {
+        let msg = WebSocketMessage {
+            sender: SimpleUser {
+                id: 1,
+                avatar_url: "http://localhost:8888/users/1/avatar".to_string(),
+                display_name: "Alice".to_string(),
+            },
+            parent_msg_id: None,
+            content_type: MessageContentType::Text,
+            text_content: "How do you do".to_string(),
+            media_url: None,
+            media_metadata: None,
+        };
+
+        let data = serde_json::to_string(&msg).unwrap();
+        println!("{}", data);
+    }
 }
